@@ -27,15 +27,13 @@ var postToSns = function(event) {
     var sns = new AWS.SNS();
     var params = {
         Message: eventText,
-        Subject: "Test SNS From Lambda",
+        Subject: "New Report found",
         TopicArn: "arn:aws:sns:us-west-2:621958466464:andrew_reports"
     };
-    //sns.publish(params, context.done);
     sns.publish(params, function(error,data){console.log(error + data);});
 };
 
 function hitApi(error, response, body) {
-    console.log("gothere2");
     if (!error && response.statusCode == 200) {
     var info = JSON.parse(body);
 
@@ -43,13 +41,9 @@ function hitApi(error, response, body) {
         var report = info.data[i];
         var elapsedTime = (new Date() - report.dateReported)
       //3600000 ms in an hour, 86400000 in a day
-        if (elapsedTime < 3600000) {
-        // here we should send the email
-            console.log("new report!");
-            postToSns("test texttt")
-        } else { // clear this out once it works
-            console.log("old news");
-            postToSns("sns mmesssage")
+        if (elapsedTime && elapsedTime < 3600000) {
+            console.log("new report!" + report)
+            postToSns(report);
         }
     }
   }
@@ -57,5 +51,4 @@ function hitApi(error, response, body) {
 
 exports.handler = (event, context, callback) => {
     request(options, hitApi);
-    console.log("gothere1");
 };
